@@ -7,7 +7,6 @@ namespace {
 	std::normal_distribution<double> distribution(0.f, 1.f);
 }
 
-
 template<typename T> 
 bool isType(void* inp) {
 	return dynamic_cast<T>(inp);
@@ -17,7 +16,7 @@ float RandFloat() {
 	return (float)rand() / (float)(RAND_MAX - 1);
 }
 
-Vec3 RandInSphere() {
+Vec3 RandOnSphere() {
 	static Vec3 p;
 	p[0] = distribution(generator);
 	p[1] = distribution(generator);
@@ -26,6 +25,24 @@ Vec3 RandInSphere() {
 	return p;
 }
 
+Vec3 RandOnDisk() {
+	static Vec3 p;
+	p[0] = distribution(generator);
+	p[1] = distribution(generator);
+	p[2] = 0;
+	p.normalize();
+	return p;
+}
+
+Vec3 RandInSphere() {
+	Vec3 p;
+	do {
+		p = 2.0 * Vec3(RandFloat(), RandFloat(), RandFloat()) - Vec3(1, 1, 1);
+	} while (dot(p, p) >= 1.0f);
+	return p;
+}
+
+
 Vec3 RandInDisk() {
 	Vec3 p;
 	do {
@@ -33,6 +50,7 @@ Vec3 RandInDisk() {
 	} while (dot(p, p) >= 1.0f);
 	return p;
 }
+
 
 Vec3 Reflect(Vec3 const& incident, Vec3 const& normal) {
 	return incident - 2 * dot(incident, normal) * normal;
