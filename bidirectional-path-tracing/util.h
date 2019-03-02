@@ -17,10 +17,23 @@ float RandFloat() {
 }
 
 Vec3 RandOnSphere() {
-	static Vec3 p;
+	Vec3 p;
 	p[0] = distribution(generator);
 	p[1] = distribution(generator);
 	p[2] = distribution(generator);
+	p.normalize();
+	return p;
+}
+
+Vec3 RandInHemisphere(Vec3& normal) {
+	Vec3 p;
+	p[0] = distribution(generator);
+	p[1] = distribution(generator);
+	p[2] = distribution(generator);
+
+	if (dot(p, normal) < 0) {
+		p *= -1;
+	}
 	p.normalize();
 	return p;
 }
