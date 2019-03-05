@@ -38,6 +38,12 @@ Vec3 RandInHemisphere(Vec3& normal) {
 	return p;
 }
 
+Vec3 RandInHemisphereImportance(Vec3& normal) {
+	Vec3 p = normal + RandOnSphere();
+	p.normalize();
+	return p;
+}
+
 Vec3 RandOnDisk() {
 	static Vec3 p;
 	p[0] = distribution(generator);
