@@ -193,7 +193,7 @@ void LoadPreset(World** world, Camera** camera, int const width, int const heigh
 		std::vector<Object*> objects;
 
 		float const wallShiny = 15.f;
-		Vec3 const wallSpec = Vec3(0.1f, 0.1f, 0.1f);
+		Vec3 const wallSpec = Vec3(0.f, 0.f, 0.f);
 		Vec3 red = Vec3(183.f / 255.f, 33.f / 255.f, 33.f / 255.f);
 		Vec3 green = Vec3(40.f / 255.f, 145.f / 255.f, 24.f / 255.f);
 		Vec3 black = Vec3(0, 0, 0);
@@ -250,12 +250,11 @@ void LoadPreset(World** world, Camera** camera, int const width, int const heigh
 		Model* cube1 = l.LoadModel("Models/Cube45.obj");
 		cube1->AddMeshes(objects, Vec3(0.3f, -0.8f, -1.f), greyMat);
 
-		//std::vector<Light*> lights;
-		//lights.push_back(new SphereLight(Vec3(0, 1.8f, 0), Vec3(0.2, 0.2f, 0.2), 1.f));
+		std::vector<Light*> lights;
+		//lights.push_back(new SphereLight(Vec3(0, 1.6f, 0), Vec3(0.2f, 0.2f, 0.2f), Vec3(1., 1., 0.9f)));
+		lights.push_back(new PointLight(Vec3(0, 1.8f, 0), Vec3(1.f, 1.f, 0.9f)));
 
-		objects.push_back(new Sphere(Vec3(0, 1.8f, 0), 0.5f, new Solid(black, black, white, 0)));
-
-		*world = new World(objects);
+		*world = new World(objects, lights);
 
 		// Set camera location
 		Vec3 cameraLocation(0, 1, z);
