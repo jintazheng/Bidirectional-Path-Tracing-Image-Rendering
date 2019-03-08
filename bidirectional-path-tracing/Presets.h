@@ -199,11 +199,13 @@ void LoadPreset(World** world, Camera** camera, int const width, int const heigh
 		Vec3 black = Vec3(0, 0, 0);
 		Vec3 grey = Vec3(0.6f, 0.6f, 0.6f);
 		Vec3 white = Vec3(1.f, 1.f, 1.f);
+		Vec3 purple = Vec3(117.f / 255.f, 28.f / 255.f, 140.f / 255.f);
 
 		Material* greyMat = new Solid(white, wallSpec, black, wallShiny);
 		Material* whiteMat = new Solid(white, wallSpec, black, wallShiny);
 		Material* redMat = new Solid(red, wallSpec, black, wallShiny);
 		Material* greenMat = new Solid(green, wallSpec, black, wallShiny);
+		Material* purpleMat = new Solid(purple, black, black, 0);
 
 		// Size in each direction
 		float x = 2.f; // meters
@@ -249,6 +251,8 @@ void LoadPreset(World** world, Camera** camera, int const width, int const heigh
 		ModelLoader l;
 		Model* cube1 = l.LoadModel("Models/Cube45.obj");
 		cube1->AddMeshes(objects, Vec3(0.3f, -0.8f, -1.f), greyMat);
+
+		objects.push_back(new Sphere(Vec3(-1, 1, 0), 0.4f, purpleMat));
 
 		std::vector<Light*> lights;
 		//lights.push_back(new PointLight(Vec3(0, 1.8f, 0), Vec3(1.f, 1.f, 1.f) * 2.f));
