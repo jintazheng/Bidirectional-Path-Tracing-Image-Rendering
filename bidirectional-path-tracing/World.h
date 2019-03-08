@@ -13,9 +13,9 @@ public:
 
 	World(std::vector<Object*> objects, std::vector<Light*> lights) {
 		// Add all lights to the object list
-		for (Light* l : lights) {
+		/*for (Light* l : lights) {
 			objects.push_back((Object*)l);
-		}
+		}*/
 
 		mOctree = new Octree(objects, 0);
 		mLightCount = lights.size();

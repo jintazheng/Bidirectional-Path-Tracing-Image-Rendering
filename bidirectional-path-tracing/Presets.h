@@ -198,7 +198,7 @@ void LoadPreset(World** world, Camera** camera, int const width, int const heigh
 		Vec3 green = Vec3(40.f / 255.f, 145.f / 255.f, 24.f / 255.f);
 		Vec3 black = Vec3(0, 0, 0);
 		Vec3 grey = Vec3(0.6f, 0.6f, 0.6f);
-		Vec3 white = Vec3(1, 1, 1);
+		Vec3 white = Vec3(1.f, 1.f, 1.f);
 
 		Material* greyMat = new Solid(white, wallSpec, black, wallShiny);
 		Material* whiteMat = new Solid(white, wallSpec, black, wallShiny);
@@ -251,8 +251,8 @@ void LoadPreset(World** world, Camera** camera, int const width, int const heigh
 		cube1->AddMeshes(objects, Vec3(0.3f, -0.8f, -1.f), greyMat);
 
 		std::vector<Light*> lights;
-		//lights.push_back(new SphereLight(Vec3(0, 1.6f, 0), Vec3(0.2f, 0.2f, 0.2f), Vec3(1., 1., 0.9f)));
-		lights.push_back(new PointLight(Vec3(0, 1.8f, 0), Vec3(1.f, 1.f, 0.9f)));
+		//lights.push_back(new PointLight(Vec3(0, 1.8f, 0), Vec3(1.f, 1.f, 1.f) * 2.f));
+		lights.push_back(new BoxLight(Vec3(0, 1.8f, 0), Vec3(0.25f, 0.001f, 0.25f), Vec3(1.f, 1.f, 1.f) * 2.f));
 
 		*world = new World(objects, lights);
 
