@@ -13,7 +13,7 @@ public:
 
 	Solid(Vec3 const& dif, Vec3 const& spec, Vec3 const& emit, float const shin) : mDiffuse(dif), mSpecular(spec), mEmittance(emit), mShinyness(shin) {}
 
-	virtual bool scatter(Ray const& r_in, HitRecord const& rec, float& scatterAmount, Ray& scattered) const {
+	virtual bool scatter(Ray const& r_in, HitRecord const& rec, float& scatterAmount, Ray& scattered) const { // Determine direction using BRDF
 		Vec3 target = rec.p + rec.normal + RandInSphere();
 		scattered = Ray(rec.p, target - rec.p);
 		scatterAmount = mScatterAmount;
@@ -36,6 +36,19 @@ public:
 	}
 
 	Vec3 mColor;
+};
+
+
+class LightMat : public Material {
+public:
+	LightMat(Vec3 const& intensity) {
+		mIntensity = intensity;
+	}
+	virtual bool scatter(Ray const& r_in, HitRecord const& rec, float& scatterAmount, Ray& scattered) const {
+		return false; // Lights don't scatter
+	}
+
+	Vec3 mIntensity;
 };
 
 /*class Lambertian : public Material {

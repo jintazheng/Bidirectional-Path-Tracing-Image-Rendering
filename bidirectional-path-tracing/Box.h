@@ -1,5 +1,7 @@
 #pragma once
 
+#include "HitRecord.h"
+
 enum {
 	X_AXIS = 0,
 	Y_AXIS = 1,
@@ -54,48 +56,36 @@ public:
 		return Z_AXIS;
 	}
 
-	bool Hit(Ray const& r) const {
-		float tmin, tmax, tymin, tymax;
+	bool Hit(Ray const& r, float const t_min, float const t_max, HitRecord& rec) const {
+		// Precompute
+		float const t1 = (mMin.x() - r.origin().x()) * r.invDir.x();
+		float const t2 = (mMax.x() - r.origin().x()) * r.invDir.x();
+		float const t3 = (mMin.y() - r.origin().y()) * r.invDir.y();
+		float const t4 = (mMax.y() - r.origin().y()) * r.invDir.y();
+		float const t5 = (mMin.z() - r.origin().z()) * r.invDir.z();
+		float const t6 = (mMax.z() - r.origin().z()) * r.invDir.z();
 
-		if (r.sign[0]) {
-			tmin = (mMin.x() - r.origin().x()) * r.invDir.x();
-			tmax = (mMax.x() - r.origin().x()) * r.invDir.x();
-		} else { // Swapped order
-			tmax = (mMin.x() - r.origin().x()) * r.invDir.x();
-			tmin = (mMax.x() - r.origin().x()) * r.invDir.x();
-		}
+		float tmin = fmax(fmax(fmin(t1, t2), fmin(t3, t4)), fmin(t5, t6));
+		float tmax = fmin(fmin(fmax(t1, t2), fmax(t3, t4)), fmax(t5, t6));
 
-		if (r.sign[1]) {
-			tymin = (mMin.y() - r.origin().y()) * r.invDir.y();
-			tymax = (mMax.y() - r.origin().y()) * r.invDir.y();
-		} else { // Swapped order
-			tymax = (mMin.y() - r.origin().y()) * r.invDir.y();
-			tymin = (mMax.y() - r.origin().y()) * r.invDir.y();
-		}
-		
-		if (tmin > tymax || tymin > tmax) {
+		// if tmax < t_min, ray is intersecting AABB, but the whole AABB is behind us
+		if (tmax < t_min){
 			return false;
 		}
 
-		tmin = fmax(tymin, tmin);
-		tmax = fmin(tmax, tymax);
-
-		float tzmin, tzmax;
-
-		if (r.sign[2]) {
-			tzmin = (mMin.z() - r.origin().z()) * r.invDir.z();
-			tzmax = (mMax.z() - r.origin().z()) * r.invDir.z();
-		} else { // Swapped order
-			tzmax = (mMin.z() - r.origin().z()) * r.invDir.z();
-			tzmin = (mMax.z() - r.origin().z()) * r.invDir.z();
-		}
-
-		if (tmin > tzmax || tzmin > tmax) {
+		// if tmin > tmax, ray doesn't intersect AABB
+		if (tmin > tmax){
 			return false;
 		}
 
-		tmin = fmax(tmin, tzmin);
-		tmax = fmin(tmax, tzmax); // Need to return these values
+		// if tmin > t_max, ray intersects but outside out artificial bounds
+		if (tmin > t_max) {
+			return false;
+		}
+
+		rec.t = tmin;
+		rec.p = r.point_at_parameter(tmin);
+		//rec.normal = ???
 
 		return true;
 	}

@@ -10,9 +10,6 @@ public:
 		A = a; 
 		B = b;
 		invDir = 1.f / B;
-		sign[0] = !signbit(B.x());
-		sign[1] = !signbit(B.y());
-		sign[2] = !signbit(B.z());
 	}
 	Vec3 origin() const { return A; }
 	Vec3 direction() const { return B; }
@@ -21,5 +18,4 @@ public:
 
 	Vec3 A, B;
 	Vec3 invDir;
-	bool sign[3];
 };

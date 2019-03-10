@@ -4,7 +4,8 @@
 
 namespace {
 	std::default_random_engine generator(time(NULL));
-	std::normal_distribution<double> distribution(0.f, 1.f);
+	std::normal_distribution<float> normalDist(0.f, 1.f);
+	std::uniform_real_distribution<float> uniformDist(0.f, 1.f);
 }
 
 template<typename T> 
@@ -13,28 +14,39 @@ bool isType(void* inp) {
 }
 
 float RandFloat() {
-	return (float)rand() / (float)(RAND_MAX - 1);
+	return uniformDist(generator);
 }
+
 
 Vec3 RandOnSphere() {
 	Vec3 p;
-	p[0] = distribution(generator);
-	p[1] = distribution(generator);
-	p[2] = distribution(generator);
+	p[0] = normalDist(generator);
+	p[1] = normalDist(generator);
+	p[2] = normalDist(generator);
 	p.normalize();
 	return p;
 }
 
-Vec3 RandInHemisphere(Vec3& normal) {
-	Vec3 p;
-	p[0] = distribution(generator);
-	p[1] = distribution(generator);
-	p[2] = distribution(generator);
+Vec3 RandOnHemisphere(Vec3 const& normal) {
+	Vec3 p = RandOnSphere();
+	if (dot(p, normal) < 0.f) {
+		p *= -1.f;
+	}
+	return p;
+}
 
-	if (dot(p, normal) < 0) {
+Vec3 RandInSphere() {
+	Vec3 p = RandOnSphere();
+	float mag = uniformDist(generator);
+	p *= cbrt(mag);  // Get a random length
+	return p;
+}
+
+Vec3 RandInHemisphere(Vec3 const& normal) {
+	Vec3 p = RandInSphere();
+	if (dot(p, normal) < 0.f) {
 		p *= -1;
 	}
-	p.normalize();
 	return p;
 }
 
@@ -45,31 +57,21 @@ Vec3 RandInHemisphereImportance(Vec3& normal) {
 }
 
 Vec3 RandOnDisk() {
-	static Vec3 p;
-	p[0] = distribution(generator);
-	p[1] = distribution(generator);
+	Vec3 p;
+	p[0] = normalDist(generator);
+	p[1] = normalDist(generator);
 	p[2] = 0;
 	p.normalize();
 	return p;
 }
 
-Vec3 RandInSphere() {
-	Vec3 p;
-	do {
-		p = 2.0 * Vec3(RandFloat(), RandFloat(), RandFloat()) - Vec3(1, 1, 1);
-	} while (dot(p, p) >= 1.0f);
-	return p;
-}
-
 
 Vec3 RandInDisk() {
-	Vec3 p;
-	do {
-		p = 2.0 * Vec3(RandFloat(), RandFloat(), 0) - Vec3(1, 1, 0);
-	} while (dot(p, p) >= 1.0f);
+	Vec3 p = RandOnDisk();
+	float mag = uniformDist(generator);
+	p *= sqrt(mag);  // Get a random length
 	return p;
 }
-
 
 Vec3 Reflect(Vec3 const& incident, Vec3 const& normal) {
 	return incident - 2 * dot(incident, normal) * normal;

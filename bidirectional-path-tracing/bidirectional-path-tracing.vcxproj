@@ -176,6 +176,7 @@
     <ClInclude Include="Box.h" />
     <ClInclude Include="BVH.h" />
     <ClInclude Include="camera.h" />
+    <ClInclude Include="HitRecord.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="object.h" />
     <ClInclude Include="AccelerationStructure.h" />

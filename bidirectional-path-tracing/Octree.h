@@ -69,7 +69,8 @@ public:
 
 	bool Hit(Ray const& r, float const t_min, float const t_max, HitRecord& rec) const {
 		// Check if volume is hit at all
-		if (!HitBB(r)) {
+		HitRecord temp_record1;
+		if (!HitBB(r, t_min, t_max, temp_record1)) {
 			return false;
 		}
 
