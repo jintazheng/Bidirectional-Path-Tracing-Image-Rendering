@@ -14,9 +14,9 @@ public:
 	Diffuse(Vec3 const& albedo) : mAlbedo(albedo) {}
 
 	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const {
-		scattered = Ray(rec.p, RandOnHemisphere(rec.normal));
-		pdf = 0.15915494309f; // 1.0 / 2.0 * M_PI 
+		scattered = Ray(rec.p, (RandInSphere() + rec.normal).unitVec());
 		cos_theta = fmax(0.f, dot(rec.normal, scattered.direction()));
+		pdf = cos_theta;
 		return true;
 	}
 
