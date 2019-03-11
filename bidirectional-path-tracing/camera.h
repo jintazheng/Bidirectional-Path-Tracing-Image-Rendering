@@ -25,7 +25,7 @@ public:
 	}
 
 	Ray get_ray(float const s, float const t) {
-		Vec3 randomDisk = lens_radius * RandInDisk();
+		Vec3 randomDisk = lens_radius * RandInDisk();  // Should this be non uniform?
 		Vec3 offset = u * randomDisk.x() + v * randomDisk.y();
 		return Ray(origin + offset, lower_left_corner + s * horizontal + t * vertical - origin - offset);
 	}

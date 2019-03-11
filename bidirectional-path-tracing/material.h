@@ -5,7 +5,104 @@
 
 class Material {
 public:
-	virtual bool scatter(Ray const& r_in, HitRecord const& rec, float& scatterAmount, Ray& scattered) const = 0;
+	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const = 0;
+};
+
+class Diffuse : public Material {
+public:
+
+	Diffuse(Vec3 const& albedo) : mAlbedo(albedo) {}
+
+	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const {
+		scattered = Ray(rec.p, RandOnHemisphere(rec.normal));
+		pdf = 0.15915494309f; // 1.0 / 2.0 * M_PI 
+		cos_theta = fmax(0.f, dot(rec.normal, scattered.direction()));
+		return true;
+	}
+
+	Vec3 getDirectLighting(Vec3 const& normal, Vec3 const& lightDir, Vec3 const& lightIntensity, float& pdf, float& cos_theta) {
+		pdf = 1.f; // TODO: Check that this is the right pdf
+		cos_theta = fmax(0.f, dot(normal, lightDir));
+		return lightIntensity;
+	}
+
+	Vec3 getBRDF() {
+		return mAlbedo * 0.31830988618f; // 1.0 / M_PI
+	}
+
+	Vec3 mAlbedo;
+};
+
+class Metal : public Material {
+public:
+	Metal(Vec3 const& albedo, float const fuzz) : mAlbedo(albedo), mFuzz(fuzz) {}
+
+	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const {
+		Vec3 reflected = Reflect(r_in.direction().unitVec(), rec.normal);
+		scattered = Ray(rec.p, reflected + mFuzz * RandInSphere());
+		pdf = 1.f;
+		cos_theta = fmax(0.f, dot(rec.normal, scattered.direction()));
+		return true;
+	}
+
+	Vec3 getBRDF() {
+		return mAlbedo;
+	}
+
+	Vec3 mAlbedo;
+	float mFuzz;
+};
+
+class Dielectric : public Material {
+public:
+	Dielectric(Vec3 const& albedo, float const ri) : mAlbedo(albedo), ref_idx(ri) {}
+
+	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const {
+		Vec3 outward_normal;
+		Vec3 reflected = Reflect(r_in.direction(), rec.normal);
+		Vec3 refracted;
+		float ratio_of_indicies;
+		float reflect_prob;
+		pdf = 1.f;
+
+		// Calculate the normal based on if the ray is inside or outside the sphere
+		if (dot(r_in.direction(), rec.normal) > 0) {
+			outward_normal = rec.normal * -1;
+			ratio_of_indicies = ref_idx;
+			cos_theta = ref_idx * dot(r_in.direction(), rec.normal) / r_in.direction().length();
+		}
+		else {
+			outward_normal = rec.normal;
+			ratio_of_indicies = 1.0f / ref_idx;
+			cos_theta = -1 * dot(r_in.direction(), rec.normal) / r_in.direction().length();
+		}
+
+		// Refract the ray
+		if (Refract(r_in.direction(), outward_normal, ratio_of_indicies, refracted)) {
+			reflect_prob = Schlick(cos_theta, ref_idx);
+		}
+		else {
+			scattered = Ray(rec.p, reflected);
+			reflect_prob = 1.0f;
+		}
+
+		// Decide to reflect or refract randomly
+		if (RandFloat() < reflect_prob) {
+			scattered = Ray(rec.p, reflected);
+		}
+		else {
+			scattered = Ray(rec.p, refracted);
+		}
+		return true;
+
+	}
+
+	Vec3 getBRDF() {
+		return mAlbedo;
+	}
+
+	Vec3 mAlbedo;
+	float ref_idx;
 };
 
 class Solid : public Material {
@@ -13,10 +110,10 @@ public:
 
 	Solid(Vec3 const& dif, Vec3 const& spec, Vec3 const& emit, float const shin) : mDiffuse(dif), mSpecular(spec), mEmittance(emit), mShinyness(shin) {}
 
-	virtual bool scatter(Ray const& r_in, HitRecord const& rec, float& scatterAmount, Ray& scattered) const { // Determine direction using BRDF
+	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const {
 		Vec3 target = rec.p + rec.normal + RandInSphere();
 		scattered = Ray(rec.p, target - rec.p);
-		scatterAmount = mScatterAmount;
+		//scatterAmount = mScatterAmount;
 		return true;
 	}
 
@@ -31,7 +128,7 @@ class FlatColor : public Material {
 public:
 		
 	FlatColor(Vec3 const& col) : mColor(col) {}
-	virtual bool scatter(Ray const& r_in, HitRecord const& rec, float& scatterAmount, Ray& scattered) const {
+	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const {
 		return false; // Single colors do not scatter
 	}
 
@@ -44,7 +141,7 @@ public:
 	LightMat(Vec3 const& intensity) {
 		mIntensity = intensity;
 	}
-	virtual bool scatter(Ray const& r_in, HitRecord const& rec, float& scatterAmount, Ray& scattered) const {
+	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const {
 		return false; // Lights don't scatter
 	}
 
@@ -96,68 +193,4 @@ public:
 	float shinyness;
 	float intensity;
 	float fuzz;
-};*/
-
-/*class Metal : public Material {
-public:
-	Metal(Vec3 const& a, float const f) : albedo(a), fuzz(f) {}
-
-	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Vec3& attenuation, Ray& scattered) const {
-		Vec3 reflected = Reflect(r_in.direction().unitVec(), rec.normal);
-		scattered = Ray(rec.p, reflected + fuzz * RandInSphere());
-		attenuation = albedo;
-		return (dot(scattered.direction(), rec.normal) > 0);
-	}
-
-	Vec3 albedo;
-	float fuzz;
-};*/
-
-
-/*class Dielectric : public Material {
-public:
-	Dielectric(float const ri) : ref_idx(ri) {}
-
-	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Vec3& attenuation, Ray& scattered) const {
-		Vec3 outward_normal;
-		Vec3 reflected = Reflect(r_in.direction(), rec.normal);
-		Vec3 refracted;
-		float ratio_of_indicies;
-		attenuation = Vec3(1.0, 1.0, 1.0);
-		float reflect_prob;
-		float cosine;
-
-		// Calculate the normal based on if the ray is inside or outside the sphere
-		if (dot(r_in.direction(), rec.normal) > 0) {
-			outward_normal = rec.normal * -1;
-			ratio_of_indicies = ref_idx;
-			cosine = ref_idx * dot(r_in.direction(), rec.normal) / r_in.direction().length();
-		}
-		else {
-			outward_normal = rec.normal;
-			ratio_of_indicies = 1.0f / ref_idx;
-			cosine = -1 * dot(r_in.direction(), rec.normal) / r_in.direction().length();
-		}
-
-		// Refract the ray
-		if (Refract(r_in.direction(), outward_normal, ratio_of_indicies, refracted)) {
-			reflect_prob = Schlick(cosine, ref_idx);
-		}
-		else {
-			scattered = Ray(rec.p, reflected);
-			reflect_prob = 1.0f;
-		}
-
-		// Decide to reflect or refract randomly
-		if (RandFloat() < reflect_prob) {
-			scattered = Ray(rec.p, reflected);
-		}
-		else {
-			scattered = Ray(rec.p, refracted);
-		}
-		return true;
-
-	}
-
-	float ref_idx;
 };*/
