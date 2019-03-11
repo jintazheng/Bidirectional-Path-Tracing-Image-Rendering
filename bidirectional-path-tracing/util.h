@@ -80,7 +80,7 @@ Vec3 Reflect(Vec3 const& incident, Vec3 const& normal) {
 bool Refract(Vec3 const& incident, Vec3 const& normal, float ratio_of_indicies, Vec3& refracted) {
 	Vec3 unitIncident = incident.unitVec();
 	float dt = dot(unitIncident, normal);
-	float discriminant = 1.0 - ((ratio_of_indicies * ratio_of_indicies) * (1 - (dt * dt)));
+	float discriminant = 1.0f - ((ratio_of_indicies * ratio_of_indicies) * (1.f - (dt * dt)));
 	if (discriminant > 0) {
 		refracted = ratio_of_indicies * (unitIncident - (normal * dt)) - (normal * sqrt(discriminant));
 		return true;
@@ -89,7 +89,7 @@ bool Refract(Vec3 const& incident, Vec3 const& normal, float ratio_of_indicies, 
 }
 
 float Schlick(float const cosine, float const ref_idx) {
-	float r0 = (1 - ref_idx) / (1 + ref_idx);
+	float r0 = (1.f - ref_idx) / (1.f + ref_idx);
 	r0 = r0 * r0;
-	return r0 + (1 - r0) * pow(1 - cosine, 5);
+	return r0 + (1.f - r0) * pow(1.f - cosine, 5.f);
 }

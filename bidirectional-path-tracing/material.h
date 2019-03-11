@@ -59,29 +59,26 @@ public:
 
 	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const {
 		Vec3 outward_normal;
-		Vec3 reflected = Reflect(r_in.direction(), rec.normal);
+		Vec3 reflected = Reflect(r_in.direction().unitVec(), rec.normal);
 		Vec3 refracted;
 		float ratio_of_indicies;
 		float reflect_prob;
-		pdf = 1.f;
 
 		// Calculate the normal based on if the ray is inside or outside the sphere
 		if (dot(r_in.direction(), rec.normal) > 0) {
-			outward_normal = rec.normal * -1;
+			outward_normal = rec.normal * -1.f;
 			ratio_of_indicies = ref_idx;
 			cos_theta = ref_idx * dot(r_in.direction(), rec.normal) / r_in.direction().length();
-		}
-		else {
+		} else {
 			outward_normal = rec.normal;
-			ratio_of_indicies = 1.0f / ref_idx;
+			ratio_of_indicies = 1.f / ref_idx;
 			cos_theta = -1 * dot(r_in.direction(), rec.normal) / r_in.direction().length();
 		}
 
 		// Refract the ray
 		if (Refract(r_in.direction(), outward_normal, ratio_of_indicies, refracted)) {
 			reflect_prob = Schlick(cos_theta, ref_idx);
-		}
-		else {
+		} else {
 			scattered = Ray(rec.p, reflected);
 			reflect_prob = 1.0f;
 		}
@@ -89,12 +86,11 @@ public:
 		// Decide to reflect or refract randomly
 		if (RandFloat() < reflect_prob) {
 			scattered = Ray(rec.p, reflected);
-		}
-		else {
+		} else {
 			scattered = Ray(rec.p, refracted);
 		}
+		pdf = cos_theta;
 		return true;
-
 	}
 
 	Vec3 getBRDF() {
