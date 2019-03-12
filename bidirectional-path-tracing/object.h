@@ -11,6 +11,10 @@ public:
 		return mBoundingBox.Hit(r, t_min, t_max, rec);
 	}
 
+	virtual void Scale(Vec3 const& scale) {
+		mBoundingBox.Scale(scale);
+	}
+
 	virtual void Translate(Vec3 const& trans) {
 		mBoundingBox.Translate(trans);
 	}

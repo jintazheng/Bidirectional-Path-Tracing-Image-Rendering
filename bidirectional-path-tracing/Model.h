@@ -22,11 +22,13 @@ public:
 		}
 	}
 
-	void AddMeshes(std::vector<Object*>& objectList, Vec3 const& trans, Material* materialOverride = nullptr) {
+	void AddMeshes(std::vector<Object*>& objectList, Vec3 const& trans, Vec3 const& scale, Material* materialOverride = nullptr) {
 		for (int ii = 0; ii < mMeshCount; ++ii) {
 			// Translate
 			// TODO: Rotate, Scale
+			mMeshes[ii]->Scale(scale);
 			mMeshes[ii]->Translate(trans);
+
 
 			// Replace material
 			if (materialOverride) {

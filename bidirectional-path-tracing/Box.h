@@ -90,6 +90,11 @@ public:
 		return true;
 	}
 
+	void Scale(Vec3 const& scale) {
+		mMin *= scale;
+		mMax *= scale;
+	}
+
 	void Translate(Vec3 const& trans) {
 		mMin += trans;
 		mMax += trans;

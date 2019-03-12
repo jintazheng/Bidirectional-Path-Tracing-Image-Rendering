@@ -6,6 +6,7 @@
 class Material {
 public:
 	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const = 0;
+	virtual Vec3 getBRDF() = 0;
 };
 
 class Diffuse : public Material {
@@ -26,7 +27,7 @@ public:
 		return lightIntensity;
 	}
 
-	Vec3 getBRDF() {
+	virtual Vec3 getBRDF() {
 		return mAlbedo * 0.31830988618f; // 1.0 / M_PI
 	}
 
@@ -45,7 +46,7 @@ public:
 		return true;
 	}
 
-	Vec3 getBRDF() {
+	virtual Vec3 getBRDF() {
 		return mAlbedo;
 	}
 
@@ -93,7 +94,7 @@ public:
 		return true;
 	}
 
-	Vec3 getBRDF() {
+	virtual Vec3 getBRDF() {
 		return mAlbedo;
 	}
 
@@ -113,6 +114,11 @@ public:
 		return true;
 	}
 
+	virtual Vec3 getBRDF() {
+		return mDiffuse;
+	}
+
+
 	Vec3 mEmittance;
 	Vec3 mDiffuse;
 	Vec3 mSpecular;
@@ -127,6 +133,9 @@ public:
 	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const {
 		return false; // Single colors do not scatter
 	}
+	virtual Vec3 getBRDF() {
+		return mColor;
+	}
 
 	Vec3 mColor;
 };
@@ -139,6 +148,9 @@ public:
 	}
 	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const {
 		return false; // Lights don't scatter
+	}
+	virtual Vec3 getBRDF() {
+		return mIntensity;
 	}
 
 	Vec3 mIntensity;

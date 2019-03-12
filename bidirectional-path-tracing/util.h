@@ -73,6 +73,14 @@ Vec3 RandInDisk() {
 	return p;
 }
 
+Vec3 RandInDiskNonUniform(float const stdDivSize) {
+	Vec3 p;
+	p[0] = normalDist(generator) / stdDivSize;
+	p[1] = normalDist(generator) / stdDivSize;
+	p[2] = 0;
+	return p;
+}
+
 Vec3 Reflect(Vec3 const& incident, Vec3 const& normal) {
 	return incident - 2 * dot(incident, normal) * normal;
 }

@@ -126,6 +126,16 @@ public:
 		return hit_anything;
 	}
 
+	virtual void Scale(Vec3 const& scale) {
+		Object::Scale(scale);
+		if (mLeft) {
+			mLeft->Scale(scale);
+		}
+		if (mRight) {
+			mRight->Scale(scale);
+		}
+	}
+
 	virtual void Translate(Vec3 const& trans) {
 		Object::Translate(trans);
 		if (mLeft) {

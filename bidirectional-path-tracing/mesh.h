@@ -49,6 +49,14 @@ public:
 		mAccelerationStructure = new BVH(mTriangles, 0);
 	}
 
+	void Scale(Vec3 const& scale) {
+		Object::Scale(scale);
+		for (int jj = 0; jj < mTriangles.size(); ++jj) {
+			mTriangles[jj]->Scale(scale);
+		}
+		mAccelerationStructure->Scale(scale);
+	}
+
 	void Translate(Vec3 const& trans) {
 		Object::Translate(trans);
 		for (int jj = 0; jj < mTriangles.size(); ++jj) {

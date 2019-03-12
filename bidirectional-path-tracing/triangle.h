@@ -78,6 +78,13 @@ public:
 		return true;
 	}
 
+	void Scale(Vec3 const& scale) {
+		A.mPos *= scale;
+		B.mPos *= scale;
+		C.mPos *= scale;
+		Init();
+	}
+
 	void Translate(Vec3 const& trans) {
 		A.mPos += trans;
 		B.mPos += trans;
