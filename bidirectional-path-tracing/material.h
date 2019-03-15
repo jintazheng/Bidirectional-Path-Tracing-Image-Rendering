@@ -3,10 +3,20 @@
 #include "vec3.h"
 #include "Util.h"
 
+enum MaterialType {
+	kDiffuse,
+	kSpecular,
+	kDielectric,
+	kDiffSpec,
+	kFlat,
+	kLight,
+};
+
 class Material {
 public:
-	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const = 0;
-	virtual Vec3 getBRDF() = 0;
+	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, Vec3& BRDF, float& pdf, float& cos_theta) const = 0;
+
+	virtual MaterialType getType() = 0;
 };
 
 class Diffuse : public Material {
@@ -14,10 +24,11 @@ public:
 
 	Diffuse(Vec3 const& albedo) : mAlbedo(albedo) {}
 
-	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const {
+	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, Vec3& BRDF, float& pdf, float& cos_theta) const {
 		scattered = Ray(rec.p, (RandInSphere() + rec.normal).unitVec());
 		cos_theta = fmax(0.f, dot(rec.normal, scattered.direction()));
 		pdf = cos_theta;
+		BRDF = getBRDF();
 		return true;
 	}
 
@@ -27,8 +38,12 @@ public:
 		return lightIntensity;
 	}
 
-	virtual Vec3 getBRDF() {
-		return mAlbedo * 0.31830988618f; // 1.0 / M_PI
+	Vec3 getBRDF() const {
+		return mAlbedo / M_PI;
+	}
+
+	virtual MaterialType getType() {
+		return kDiffuse;
 	}
 
 	Vec3 mAlbedo;
@@ -38,27 +53,116 @@ class Metal : public Material {
 public:
 	Metal(Vec3 const& albedo, float const fuzz) : mAlbedo(albedo), mFuzz(fuzz) {}
 
-	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const {
+	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, Vec3& BRDF, float& pdf, float& cos_theta) const {
 		Vec3 reflected = Reflect(r_in.direction().unitVec(), rec.normal);
 		scattered = Ray(rec.p, reflected + mFuzz * RandInSphere());
 		pdf = 1.f;
 		cos_theta = fmax(0.f, dot(rec.normal, scattered.direction()));
+		BRDF = getBRDF();
 		return true;
 	}
 
-	virtual Vec3 getBRDF() {
+	Vec3 getBRDF() const {
 		return mAlbedo;
+	}
+
+	virtual MaterialType getType() {
+		return kSpecular;
 	}
 
 	Vec3 mAlbedo;
 	float mFuzz;
 };
 
+class DiffSpec : public Material {
+public:
+
+	DiffSpec(Vec3 const& albedo, float const fuzz, float const shininess, float const kD, float const kS) : mAlbedo(albedo), mFuzz(fuzz), mShininess(shininess) {
+		float const total = kD + kS;
+		if (total <= 1.f) {
+			mDiffuseAmount = kD;
+			mSpecularAmount = kS;
+		} else {
+			mDiffuseAmount = kD / total;
+			mSpecularAmount = kS / total;
+		}
+	}
+
+	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, Vec3& BRDF, float& pdf, float& cos_theta) const {
+		int bounce = getBounceType();
+		if (bounce == 1) {
+			// Diffuse
+			scattered = Ray(rec.p, (RandInSphere() + rec.normal).unitVec());
+			cos_theta = fmax(0.f, dot(rec.normal, scattered.direction()));
+			pdf = cos_theta;
+			BRDF = getBRDFDiffuse();
+			return true;
+		}
+		if (bounce == 2) {
+			// Specular
+			Vec3 reflected = Reflect(r_in.direction().unitVec(), rec.normal);
+			scattered = Ray(rec.p, reflected + mFuzz * RandInSphere());
+			pdf = 1.f;
+			cos_theta = fmax(0.f, dot(rec.normal, scattered.direction()));
+			BRDF = getBRDFSpecular();
+			return true;
+		}
+		// absorbed
+		return false;
+	}
+
+	Vec3 getDirectLightingDiffuse(Vec3 const& normal, Vec3 const& lightDir, Vec3 const& lightIntensity, float& pdf, float& cos_theta) {
+		pdf = 1.f;
+		cos_theta = fmax(0.f, dot(normal, lightDir));
+		return lightIntensity;
+	}
+
+	Vec3 getDirectLightingSpecular(Vec3 const& normal, Vec3 const& negLightDir, Vec3 const& eyeDir, Vec3 const& lightIntensity, float& pdf, float& cos_theta) {
+		float const specularAmount = fmax(0.f, pow(dot(Reflect(negLightDir.unitVec(), normal.unitVec()).unitVec(), eyeDir.unitVec()), mShininess));
+		cos_theta = 1.f; // Not really sure what to do with these
+		pdf = 1.f;
+		return lightIntensity * specularAmount;
+	}
+
+	Vec3 getBRDFDiffuse() const {
+		return mAlbedo / M_PI;
+	}
+
+	Vec3 getBRDFSpecular() const {
+		return mAlbedo;
+	}
+
+	Vec3 getBRDFSpecularDirect() const {
+		return Vec3(1, 1, 1) * ((mShininess + 2) / (2 * M_PI));
+	}
+
+	virtual MaterialType getType() {
+		return kDiffSpec;
+	}
+
+	int getBounceType() const {
+		float const rand = RandFloat();
+		if (rand < mDiffuseAmount) {
+			return 1;
+		}
+		if (rand < mDiffuseAmount + mSpecularAmount) {
+			return 2;
+		}
+		return 0;
+	}
+
+	Vec3 mAlbedo;
+	float mFuzz;
+	float mShininess;
+	float mDiffuseAmount;
+	float mSpecularAmount;
+};
+
 class Dielectric : public Material {
 public:
 	Dielectric(Vec3 const& albedo, float const ri) : mAlbedo(albedo), ref_idx(ri) {}
 
-	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const {
+	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, Vec3& BRDF, float& pdf, float& cos_theta) const {
 		Vec3 outward_normal;
 		Vec3 reflected = Reflect(r_in.direction().unitVec(), rec.normal);
 		Vec3 refracted;
@@ -91,50 +195,32 @@ public:
 			scattered = Ray(rec.p, refracted);
 		}
 		pdf = cos_theta;
+		BRDF = getBRDF();
 		return true;
 	}
 
-	virtual Vec3 getBRDF() {
+	Vec3 getBRDF() const {
 		return mAlbedo;
+	}
+
+	virtual MaterialType getType() {
+		return kDielectric;
 	}
 
 	Vec3 mAlbedo;
 	float ref_idx;
 };
 
-class Solid : public Material {
-public:
-
-	Solid(Vec3 const& dif, Vec3 const& spec, Vec3 const& emit, float const shin) : mDiffuse(dif), mSpecular(spec), mEmittance(emit), mShinyness(shin) {}
-
-	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const {
-		Vec3 target = rec.p + rec.normal + RandInSphere();
-		scattered = Ray(rec.p, target - rec.p);
-		//scatterAmount = mScatterAmount;
-		return true;
-	}
-
-	virtual Vec3 getBRDF() {
-		return mDiffuse;
-	}
-
-
-	Vec3 mEmittance;
-	Vec3 mDiffuse;
-	Vec3 mSpecular;
-	float mShinyness;
-	float mScatterAmount;
-};
-
 class FlatColor : public Material {
 public:
 		
 	FlatColor(Vec3 const& col) : mColor(col) {}
-	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const {
+	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, Vec3& BRDF, float& pdf, float& cos_theta) const {
 		return false; // Single colors do not scatter
 	}
-	virtual Vec3 getBRDF() {
-		return mColor;
+
+	virtual MaterialType getType() {
+		return kFlat;
 	}
 
 	Vec3 mColor;
@@ -146,11 +232,12 @@ public:
 	LightMat(Vec3 const& intensity) {
 		mIntensity = intensity;
 	}
-	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, float& pdf, float& cos_theta) const {
+	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, Vec3& BRDF, float& pdf, float& cos_theta) const {
 		return false; // Lights don't scatter
 	}
-	virtual Vec3 getBRDF() {
-		return mIntensity;
+
+	virtual MaterialType getType() {
+		return kLight;
 	}
 
 	Vec3 mIntensity;

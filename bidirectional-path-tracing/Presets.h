@@ -203,11 +203,11 @@ void LoadPreset(World** world, Camera** camera, int const width, int const heigh
 		Vec3 white = Vec3(1.f, 1.f, 1.f);
 		Vec3 purple = Vec3(117.f / 255.f, 28.f / 255.f, 140.f / 255.f);
 
-		Material* greyMat = new Solid(white, wallSpec, black, wallShiny);
-		Material* whiteMat = new Solid(white, wallSpec, black, wallShiny);
-		Material* redMat = new Solid(red, wallSpec, black, wallShiny);
-		Material* greenMat = new Solid(green, wallSpec, black, wallShiny);
-		Material* purpleMat = new Solid(purple, black, black, 0);
+		Material* greyMat = new Diffuse(white);
+		Material* whiteMat = new Diffuse(white);
+		Material* redMat = new Diffuse(red);
+		Material* greenMat = new Diffuse(green);
+		Material* purpleMat = new Diffuse(purple);
 
 		Material* light = new LightMat(Vec3(1., 1., 1.));
 
@@ -285,10 +285,10 @@ void LoadPreset(World** world, Camera** camera, int const width, int const heigh
 		Vec3 white = Vec3(1.f, 1.f, 1.f);
 		Vec3 purple = Vec3(117.f / 255.f, 28.f / 255.f, 140.f / 255.f);
 
-		Material* greyMat = new Solid(white, wallSpec, black, wallShiny);
-		Material* whiteMat = new Solid(white, wallSpec, black, wallShiny);
-		Material* redMat = new Solid(red, wallSpec, black, wallShiny);
-		Material* greenMat = new Solid(green, wallSpec, black, wallShiny);
+		Material* greyMat = new Diffuse(white);
+		Material* whiteMat = new Diffuse(white);
+		Material* redMat = new Diffuse(red);
+		Material* greenMat = new Diffuse(green);
 
 		Material* light = new LightMat(Vec3(1., 1., 1.));
 
@@ -332,8 +332,8 @@ void LoadPreset(World** world, Camera** camera, int const width, int const heigh
 
 		float const wallShiny = 30.f;
 		Vec3 const wallSpec = Vec3(1.f, 1.f, 1.f);
-		Vec3 red = Vec3(220.f / 255.f, 23.f / 255.f, 23.f / 255.f);
-		Vec3 green = Vec3(32.f / 255.f, 183.f / 255.f, 10.f / 255.f);
+		Vec3 red = Vec3(183.f / 255.f, 33.f / 255.f, 33.f / 255.f);
+		Vec3 green = Vec3(40.f / 255.f, 145.f / 255.f, 24.f / 255.f);
 		Vec3 black = Vec3(0, 0, 0);
 		Vec3 grey = Vec3(0.6f, 0.6f, 0.6f);
 		Vec3 white = Vec3(1.f, 1.f, 1.f);
@@ -345,9 +345,10 @@ void LoadPreset(World** world, Camera** camera, int const width, int const heigh
 		Material* greenMat = new Diffuse(green);
 		Material* purpleMat = new Diffuse(purple);
 		Material* metal = new Metal(Vec3(0.8f, 0.8f, 0.8f), 0.f);
-		Dielectric* diel = new Dielectric(Vec3(1., 1., 1.), 1.4f);
+		Material* diel = new Dielectric(Vec3(1., 1., 1.), 1.4f);
+		Material* diffSpec = new DiffSpec(Vec3(0.8f, 0.2f, 0.3f), 0.f, 100.f, 0.8f, 0.2f);
 
-		Material* light = new LightMat(Vec3(1.f, 1.f, 0.9f));
+		Material* light = new LightMat(Vec3(0.9f, 0.9f, 0.8f));
 
 		Vec3 const zero(0, 0, 0);
 		Vec3 const one(1, 1, 1);
@@ -368,8 +369,8 @@ void LoadPreset(World** world, Camera** camera, int const width, int const heigh
 		model = l.LoadModel("Models/cbox/cbox_largebox.obj");
 		model->AddMeshes(objects, zero, one, greyMat);*/
 
-		objects.push_back(new Sphere(Vec3(0.4f, 0.1f, .4f), 0.1f, metal));
-		objects.push_back(new Sphere(Vec3(0.14f, 0.1f, 0.2f), 0.1f, diel));
+		objects.push_back(new Sphere(Vec3(0.4f, 0.1f, 0.4f), 0.1f, metal));
+		objects.push_back(new Sphere(Vec3(0.14f, 0.1f, 0.2f), 0.1f, diffSpec));
 
 		//model = l.LoadModel("Models/pig.obj");
 		//model->AddMeshes(objects, Vec3(0.45, 0.31, 0.35), Vec3(0.1, 0.1, 0.1), purpleMat);

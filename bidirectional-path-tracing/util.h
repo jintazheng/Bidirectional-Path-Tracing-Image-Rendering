@@ -5,7 +5,7 @@
 namespace {
 	std::default_random_engine generator(time(NULL));
 	std::normal_distribution<float> normalDist(0.f, 1.f);
-	std::uniform_real_distribution<float> uniformDist(0.f, 1.f);
+	std::uniform_real_distribution<float> uniformDist(0.f, 1.f); //[0.f, 1.)
 }
 
 template<typename T> 
