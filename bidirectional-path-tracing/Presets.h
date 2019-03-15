@@ -278,8 +278,10 @@ void LoadPreset(World** world, Camera** camera, int const width, int const heigh
 
 		float const wallShiny = 15.f;
 		Vec3 const wallSpec = Vec3(0.f, 0.f, 0.f);
-		Vec3 red = Vec3(183.f / 255.f, 33.f / 255.f, 33.f / 255.f);
-		Vec3 green = Vec3(40.f / 255.f, 145.f / 255.f, 24.f / 255.f);
+		//Vec3 red = Vec3(183.f / 255.f, 33.f / 255.f, 33.f / 255.f);
+		//Vec3 green = Vec3(40.f / 255.f, 145.f / 255.f, 24.f / 255.f);
+		Vec3 red = Vec3(220.f / 255.f, 33.f / 255.f, 33.f / 255.f);
+		Vec3 green = Vec3(47.f / 255.f, 184.f / 255.f, 26.f / 255.f);
 		Vec3 black = Vec3(0, 0, 0);
 		Vec3 grey = Vec3(0.6f, 0.6f, 0.6f);
 		Vec3 white = Vec3(1.f, 1.f, 1.f);
@@ -332,8 +334,8 @@ void LoadPreset(World** world, Camera** camera, int const width, int const heigh
 
 		float const wallShiny = 30.f;
 		Vec3 const wallSpec = Vec3(1.f, 1.f, 1.f);
-		Vec3 red = Vec3(183.f / 255.f, 33.f / 255.f, 33.f / 255.f);
-		Vec3 green = Vec3(40.f / 255.f, 145.f / 255.f, 24.f / 255.f);
+		Vec3 red = Vec3(220.f / 255.f, 33.f / 255.f, 33.f / 255.f);
+		Vec3 green = Vec3(47.f / 255.f, 184.f / 255.f, 26.f / 255.f);
 		Vec3 black = Vec3(0, 0, 0);
 		Vec3 grey = Vec3(0.6f, 0.6f, 0.6f);
 		Vec3 white = Vec3(1.f, 1.f, 1.f);
@@ -346,9 +348,9 @@ void LoadPreset(World** world, Camera** camera, int const width, int const heigh
 		Material* purpleMat = new Diffuse(purple);
 		Material* metal = new Metal(Vec3(0.8f, 0.8f, 0.8f), 0.f);
 		Material* diel = new Dielectric(Vec3(1., 1., 1.), 1.4f);
-		Material* diffSpec = new DiffSpec(Vec3(0.8f, 0.2f, 0.3f), 0.f, 100.f, 0.8f, 0.2f);
+		Material* diffSpec = new DiffSpec(Vec3(0.8f, 0.2f, 0.3f), 0.f, 100.f, 0.5f, 0.5f);
 
-		Material* light = new LightMat(Vec3(0.9f, 0.9f, 0.8f));
+		Material* light = new LightMat(Vec3(1.f, 1.f, 0.9f));
 
 		Vec3 const zero(0, 0, 0);
 		Vec3 const one(1, 1, 1);
@@ -364,10 +366,6 @@ void LoadPreset(World** world, Camera** camera, int const width, int const heigh
 		model->AddMeshes(objects, zero, one, greenMat);
 		model = l.LoadModel("Models/cbox/cbox_redwall.obj");
 		model->AddMeshes(objects, zero, one, redMat);
-		/*model = l.LoadModel("Models/cbox/cbox_smallbox.obj");
-		model->AddMeshes(objects, zero, one, greyMat);
-		model = l.LoadModel("Models/cbox/cbox_largebox.obj");
-		model->AddMeshes(objects, zero, one, greyMat);*/
 
 		objects.push_back(new Sphere(Vec3(0.4f, 0.1f, 0.4f), 0.1f, metal));
 		objects.push_back(new Sphere(Vec3(0.14f, 0.1f, 0.2f), 0.1f, diffSpec));
