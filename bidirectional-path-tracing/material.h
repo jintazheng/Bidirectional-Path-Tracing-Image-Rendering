@@ -27,10 +27,18 @@ public:
 	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, Vec3& BRDF, float& pdf, float& cos_theta) const {
 		scattered = Ray(rec.p, (RandInSphere() + rec.normal).unitVec());
 		cos_theta = fmax(0.f, dot(rec.normal, scattered.direction()));
-		pdf = cos_theta;
+		pdf = cos_theta * M_1_PI;
 		BRDF = getBRDF();
 		return true;
 	}
+
+	/*virtual bool scatter(Ray const& r_in, HitRecord const& rec, Ray& scattered, Vec3& BRDF, float& pdf, float& cos_theta) const {
+		scattered = Ray(rec.p, RandOnHemisphere(rec.normal));
+		cos_theta = fmax(0.f, dot(rec.normal, scattered.direction()));
+		pdf = 1 / (2 * M_PI);
+		BRDF = getBRDF();
+		return true;
+	}*/
 
 	Vec3 getDirectLighting(Vec3 const& normal, Vec3 const& lightDir, Vec3 const& lightIntensity, float& pdf, float& cos_theta) {
 		pdf = 1.f; // TODO: Check that this is the right pdf
@@ -39,7 +47,7 @@ public:
 	}
 
 	Vec3 getBRDF() const {
-		return mAlbedo / M_PI;
+		return mAlbedo * M_1_PI;
 	}
 
 	virtual MaterialType getType() {
@@ -242,50 +250,3 @@ public:
 
 	Vec3 mIntensity;
 };
-
-/*class Lambertian : public Material {
-public:
-	Lambertian(Vec3 const& a) : albedo(a) {}
-
-	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Vec3& attenuation, Ray& scattered) const {
-		Vec3 target = rec.p + rec.normal + RandInSphere();
-		scattered = Ray(rec.p, target - rec.p);
-		attenuation = albedo;
-		return true;
-	}
-
-	Vec3 albedo;
-};
-
-class Specular : public Material {
-public:
-	Specular(Vec3 const& a, float const s, float const i, float(f)) : albedo(a), shinyness(s), intensity(i), fuzz(f) {}
-
-	virtual bool scatter(Ray const& r_in, HitRecord const& rec, Vec3& attenuation, Ray& scattered) const {
-		Vec3 reflected = Reflect(r_in.direction().unitVec(), rec.normal);
-		reflected += fuzz * RandInSphere();
-
-		// Calculate how much of the ray should come from reflection, how much should come from diffuse
-		float const cosPhi = dot(rec.normal, reflected) / rec.normal.length() / reflected.length();
-		float const spec = pow(cosPhi, shinyness) * intensity;
-
-		if (RandFloat() < spec) {
-			// Reflect
-			scattered = Ray(rec.p, reflected);
-			attenuation = Vec3(spec, spec, spec);
-		}
-		else {
-			// Base color
-			Vec3 target = rec.p + rec.normal + RandInSphere();
-			scattered = Ray(rec.p, target - rec.p);
-			attenuation = albedo;
-		}
-
-		return true;
-	}
-
-	Vec3 albedo;
-	float shinyness;
-	float intensity;
-	float fuzz;
-};*/

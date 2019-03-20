@@ -292,7 +292,7 @@ void LoadPreset(World** world, Camera** camera, int const width, int const heigh
 		Material* redMat = new Diffuse(red);
 		Material* greenMat = new Diffuse(green);
 
-		Material* light = new LightMat(Vec3(1., 1., 1.));
+		Material* light = new LightMat(Vec3(1.f, 1.f, 1.f));
 
 		Vec3 const zero(0, 0, 0);
 		Vec3 const one(1, 1, 1);
